@@ -8,19 +8,14 @@
 {
     'use strict';
 
-    var moment;
+    var moment = null;
     if (typeof exports === 'object') {
         // CommonJS module
-        // Load moment.js as an optional dependency
-        try { moment = require('moment'); } catch (e) {}
         module.exports = factory(moment);
     } else if (typeof define === 'function' && define.amd) {
         // AMD. Register as an anonymous module.
         define(function (req)
         {
-            // Load moment.js as an optional dependency
-            var id = 'moment';
-            try { moment = req(id); } catch (e) {}
             return factory(moment);
         });
     } else {
@@ -341,6 +336,12 @@
         if (opts.isEndRange) {
             arr.push('is-endrange');
         }
+
+        // NIAL: Custom day class name
+        if (typeof opts.customClassName === 'string') {
+        	arr.push(opts.customClassName);
+        }
+        
         return '<td data-day="' + opts.day + '" class="' + arr.join(' ') + '" aria-selected="' + ariaSelected + '">' +
                  '<button class="pika-button pika-day" type="button" ' +
                     'data-pika-year="' + opts.year + '" data-pika-month="' + opts.month + '" data-pika-day="' + opts.day + '">' +
@@ -766,6 +767,9 @@
                 }
             }
 
+            // NIAL: Custom day class name function
+            opts.dayClassNameFn = options.dayClassNameFn;
+
             return opts;
         },
 
@@ -1175,7 +1179,8 @@
                     isDisabled = (opts.minDate && day < opts.minDate) ||
                                  (opts.maxDate && day > opts.maxDate) ||
                                  (opts.disableWeekends && isWeekend(day)) ||
-                                 (opts.disableDayFn && opts.disableDayFn(day));
+                                 (opts.disableDayFn && opts.disableDayFn(day)),
+                    customClassName = typeof opts.dayClassNameFn === 'function' ? opts.dayClassNameFn(day) : null;
 
                 if (isEmpty) {
                     if (i < before) {
@@ -1202,7 +1207,8 @@
                         isEndRange: isEndRange,
                         isInRange: isInRange,
                         showDaysInNextAndPreviousMonths: opts.showDaysInNextAndPreviousMonths,
-                        enableSelectionDaysInNextAndPreviousMonths: opts.enableSelectionDaysInNextAndPreviousMonths
+                        enableSelectionDaysInNextAndPreviousMonths: opts.enableSelectionDaysInNextAndPreviousMonths,
+                        customClassName: customClassName
                     };
 
                 if (opts.pickWholeWeek && isSelected) {
